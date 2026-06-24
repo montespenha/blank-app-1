@@ -1,12 +1,12 @@
 import streamlit as st
 import datetime
-import pytz
 import pandas as pd
 
 st.set_page_config(page_title="Alerta Trader", page_icon="⏰", layout="centered")
 
-# Configura o fuso horário de Brasília
-fuso_br = pytz.timezone('America/Sao_Paulo')
+# Configura o fuso horário de Brasília (UTC-3) nativamente sem pacotes extras
+diferenca_horas = datetime.timedelta(hours=-3)
+fuso_br = datetime.timezone(diferenca_horas)
 agora = datetime.datetime.now(fuso_br)
 
 st.title("⏰ Alerta de Aberturas e Notícias")
