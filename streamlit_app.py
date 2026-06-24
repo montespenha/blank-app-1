@@ -5,12 +5,17 @@ import requests
 
 st.set_page_config(page_title="Alerta Trader Pro", page_icon="⏰", layout="centered")
 
-# =========================================================================
-# 💾 SEUS DADOS FIXOS DO TELEGRAM INTEGRADOS COM SUCESSO:
-# =========================================================================
+# --- ATUALIZAÇÃO AUTOMÁTICA (CORREÇÃO) ---
+# Força o aplicativo a rodar sozinho a cada 30 segundos para checar o relógio e disparar as mensagens
+st.logo = None
+if "contador" not in st.session_state:
+    st.session_state.contador = 0
+st.fragment(run_every=30)(lambda: None)() 
+# ------------------------------------------
+
+# 💾 SEUS DADOS FIXOS DO TELEGRAM INTEGRADOS:
 TELEGRAM_TOKEN_FIXO = "8864961928:AAHYdOHvEjnFao-qpQ-H8iIXF3CggGA0xjc"
 TELEGRAM_CHAT_ID_FIXO = "331702469"
-# =========================================================================
 
 # --- CONFIGURAÇÕES DE ENVIOS NA BARRA LATERAL ---
 st.sidebar.header("🔧 Configurações de Notificação")
@@ -21,29 +26,18 @@ TWILIO_AUTH_TOKEN = st.sidebar.text_input("Twilio Auth Token", type="password")
 SEU_CELULAR_WHATSAPP = st.sidebar.text_input("Seu Celular (Ex: +5521999999999)")
 
 def enviar_mensagem_global(mensagem):
-    # Enviar via Telegram usando os dados fixados
     token = TELEGRAM_TOKEN if TELEGRAM_TOKEN else TELEGRAM_TOKEN_FIXO
     chat_id = TELEGRAM_CHAT_ID if TELEGRAM_CHAT_ID else TELEGRAM_CHAT_ID_FIXO
-    
     if token and chat_id:
         url_tg = f"https://telegram.org{token}/sendMessage"
-        try:
-            requests.post(url_tg, json={"chat_id": chat_id, "text": mensagem})
-        except:
-            pass
+        try: requests.post(url_tg, json={"chat_id": chat_id, "text": mensagem})
+        except: pass
             
-    # Enviar via WhatsApp (Twilio)
     if TWILIO_SID and TWILIO_AUTH_TOKEN and SEU_CELULAR_WHATSAPP:
         url_wa = f"https://twilio.com{TWILIO_SID}/Messages.json"
-        payload = {
-            "From": "whatsapp:+14155238886",
-            "To": f"whatsapp:{SEU_CELULAR_WHATSAPP}",
-            "Body": mensagem
-        }
-        try:
-            requests.post(url_wa, data=payload, auth=(TWILIO_SID, TWILIO_AUTH_TOKEN))
-        except:
-            pass
+        payload = {"From": "whatsapp:+14155238886", "To": f"whatsapp:{SEU_CELULAR_WHATSAPP}", "Body": mensagem}
+        try: requests.post(url_wa, data=payload, auth=(TWILIO_SID, TWILIO_AUTH_TOKEN))
+        except: pass
 
 # Configura o fuso horário de Brasília (UTC-3) nativo
 diferenca_horas = datetime.timedelta(hours=-3)
@@ -55,7 +49,6 @@ st.write(f"**Horário atual de Brasília:** {agora.strftime('%H:%M:%S')}")
 
 # 1. MONITOR DE SESSÕES
 st.subheader("🏦 Painel de Status das Aberturas")
-
 horarios_mercado = [
     {"Nome": "EUR/USD (Europa)", "Abertura": "04:00", "Fechamento": "13:00"},
     {"Nome": "Ouro (EUA - Nova York)", "Abertura": "09:00", "Fechamento": "18:00"},
@@ -72,14 +65,10 @@ for merc in horarios_mercado:
     dif_mercado = dt_abertura - agora
     minutos_mercado = dif_mercado.total_seconds() / 60
     
-    if merc["Nome"] == "USD/JPY (Ásia)":
-        esta_aberto = agora.hour >= 20 or agora.hour < 5
-    elif merc["Nome"] == "EUR/USD (Europa)":
-        esta_aberto = 4 <= agora.hour < 13
-    elif merc["Nome"] == "Ouro (EUA - Nova York)":
-        esta_aberto = 9 <= agora.hour < 18
-    else:
-        esta_aberto = 10 <= agora.hour and (agora.hour != 10 or agora.minute >= 30) and agora.hour < 17
+    if merc["Nome"] == "USD/JPY (Ásia)": esta_aberto = agora.hour >= 20 or agora.hour < 5
+    elif merc["Nome"] == "EUR/USD (Europa)": esta_aberto = 4 <= agora.hour < 13
+    elif merc["Nome"] == "Ouro (EUA - Nova York)": esta_aberto = 9 <= agora.hour < 18
+    else: esta_aberto = 10 <= agora.hour and (agora.hour != 10 or agora.minute >= 30) and agora.hour < 17
         
     status_txt = "🟢 ABERTO" if esta_aberto else "🔴 FECHADO"
     st.markdown(f"**{merc['Nome']}:** {status_txt} (Abertura às {merc['Abertura']})")
