@@ -5,20 +5,30 @@ import requests
 
 st.set_page_config(page_title="Alerta Trader Pro", page_icon="⏰", layout="centered")
 
-# --- CONFIGURAÇÕES DE ENVIOS NA BARRA LATERAL ---
+# =========================================================================
+# 💾 COLOQUE SEUS DADOS FIXOS DO TELEGRAM DENTRO DAS ASPAS ABAIXO:
+# =========================================================================
+TELEGRAM_TOKEN_FIXO = "SEU_TOKEN_AQUI"
+TELEGRAM_CHAT_ID_FIXO = "SEU_CHAT_ID_AQUI"
+# =========================================================================
+
+# --- CONFIGURAÇÕES DE ENVIOS NA BARRA LATERAL (CASO QUEIRA ALTERAR ONLINE) ---
 st.sidebar.header("🔧 Configurações de Notificação")
-TELEGRAM_TOKEN = st.sidebar.text_input("Token do Telegram Bot", type="password")
-TELEGRAM_CHAT_ID = st.sidebar.text_input("Seu Chat ID do Telegram")
+TELEGRAM_TOKEN = st.sidebar.text_input("Token do Telegram Bot", value=TELEGRAM_TOKEN_FIXO, type="password")
+TELEGRAM_CHAT_ID = st.sidebar.text_input("Seu Chat ID do Telegram", value=TELEGRAM_CHAT_ID_FIXO)
 TWILIO_SID = st.sidebar.text_input("Twilio Account SID", type="password")
 TWILIO_AUTH_TOKEN = st.sidebar.text_input("Twilio Auth Token", type="password")
 SEU_CELULAR_WHATSAPP = st.sidebar.text_input("Seu Celular (Ex: +5521999999999)")
 
 def enviar_mensagem_global(mensagem):
-    # Enviar via Telegram
-    if TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
-        url_tg = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
+    # Enviar via Telegram usando os dados fixados ou digitados
+    token = TELEGRAM_TOKEN if TELEGRAM_TOKEN else TELEGRAM_TOKEN_FIXO
+    chat_id = TELEGRAM_CHAT_ID if TELEGRAM_CHAT_ID else TELEGRAM_CHAT_ID_FIXO
+    
+    if token and chat_id:
+        url_tg = f"https://telegram.org{token}/sendMessage"
         try:
-            requests.post(url_tg, json={"chat_id": TELEGRAM_CHAT_ID, "text": mensagem})
+            requests.post(url_tg, json={"chat_id": chat_id, "text": message})
         except:
             pass
             
@@ -43,10 +53,9 @@ agora = datetime.datetime.now(fuso_br)
 st.title("📈 Monitor de Mercados & Alertas Ativos")
 st.write(f"**Horário atual de Brasília:** {agora.strftime('%H:%M:%S')}")
 
-# 1. MONITOR DE SESSÕES (Regras solicitadas vigentes para Junho de 2026)
+# 1. MONITOR DE SESSÕES
 st.subheader("🏦 Painel de Status das Aberturas")
 
-# Criação da lista com a nova regra de Futuros EUA (10:30)
 horarios_mercado = [
     {"Nome": "EUR/USD (Europa)", "Abertura": "04:00", "Fechamento": "13:00"},
     {"Nome": "Ouro (EUA - Nova York)", "Abertura": "09:00", "Fechamento": "18:00"},
@@ -54,7 +63,6 @@ horarios_mercado = [
     {"Nome": "USD/JPY (Ásia)", "Abertura": "20:00", "Fechamento": "05:00 (+1d)"}
 ]
 
-# Inicializa o controle de envio no histórico da página
 if "historico_envios" not in st.session_state:
     st.session_state.historico_envios = []
 
@@ -64,7 +72,6 @@ for merc in horarios_mercado:
     dif_mercado = dt_abertura - agora
     minutos_mercado = dif_mercado.total_seconds() / 60
     
-    # Lógica de exibição de Status na Tela
     if merc["Nome"] == "USD/JPY (Ásia)":
         esta_aberto = agora.hour >= 20 or agora.hour < 5
     elif merc["Nome"] == "EUR/USD (Europa)":
@@ -77,7 +84,6 @@ for merc in horarios_mercado:
     status_txt = "🟢 ABERTO" if esta_aberto else "🔴 FECHADO"
     st.markdown(f"**{merc['Nome']}:** {status_txt} (Abertura às {merc['Abertura']})")
 
-    # Disparo de Alerta: Exatamente 2 minutos antes de abrir
     if 1.5 <= minutos_mercado <= 2.0:
         msg_abertura = f"🚨 ATENÇÃO TRADER: Faltam 2 minutos para a abertura do mercado: {merc['Nome']} às {merc['Abertura']}!"
         if msg_abertura not in st.session_state.historico_envios:
@@ -93,7 +99,6 @@ dados_noticias = [
 ]
 st.dataframe(pd.DataFrame(dados_noticias), use_container_width=True)
 
-# Lógica de varredura das notícias: Alerta exato de 2 minutos
 st.subheader("🔔 Histórico de Notificações Recentes")
 alerta_tela = False
 
