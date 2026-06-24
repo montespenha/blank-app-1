@@ -6,13 +6,13 @@ import requests
 st.set_page_config(page_title="Alerta Trader Pro", page_icon="⏰", layout="centered")
 
 # =========================================================================
-# 💾 COLOQUE SEUS DADOS FIXOS DO TELEGRAM DENTRO DAS ASPAS ABAIXO:
+# 💾 SEUS DADOS FIXOS DO TELEGRAM INTEGRADOS COM SUCESSO:
 # =========================================================================
-TELEGRAM_TOKEN_FIXO = "SEU_TOKEN_AQUI"
-TELEGRAM_CHAT_ID_FIXO = "SEU_CHAT_ID_AQUI"
+TELEGRAM_TOKEN_FIXO = "8864961928:AAHYdOHvEjnFao-qpQ-H8iIXF3CggGA0xjc"
+TELEGRAM_CHAT_ID_FIXO = "331702469"
 # =========================================================================
 
-# --- CONFIGURAÇÕES DE ENVIOS NA BARRA LATERAL (CASO QUEIRA ALTERAR ONLINE) ---
+# --- CONFIGURAÇÕES DE ENVIOS NA BARRA LATERAL ---
 st.sidebar.header("🔧 Configurações de Notificação")
 TELEGRAM_TOKEN = st.sidebar.text_input("Token do Telegram Bot", value=TELEGRAM_TOKEN_FIXO, type="password")
 TELEGRAM_CHAT_ID = st.sidebar.text_input("Seu Chat ID do Telegram", value=TELEGRAM_CHAT_ID_FIXO)
@@ -21,14 +21,14 @@ TWILIO_AUTH_TOKEN = st.sidebar.text_input("Twilio Auth Token", type="password")
 SEU_CELULAR_WHATSAPP = st.sidebar.text_input("Seu Celular (Ex: +5521999999999)")
 
 def enviar_mensagem_global(mensagem):
-    # Enviar via Telegram usando os dados fixados ou digitados
+    # Enviar via Telegram usando os dados fixados
     token = TELEGRAM_TOKEN if TELEGRAM_TOKEN else TELEGRAM_TOKEN_FIXO
     chat_id = TELEGRAM_CHAT_ID if TELEGRAM_CHAT_ID else TELEGRAM_CHAT_ID_FIXO
     
     if token and chat_id:
         url_tg = f"https://telegram.org{token}/sendMessage"
         try:
-            requests.post(url_tg, json={"chat_id": chat_id, "text": message})
+            requests.post(url_tg, json={"chat_id": chat_id, "text": mensagem})
         except:
             pass
             
