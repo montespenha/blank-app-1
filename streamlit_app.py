@@ -12,7 +12,7 @@ agora = datetime.datetime.now(fuso_br)
 st.title("⏰ Alerta de Aberturas e Notícias")
 st.write(f"**Horário de Brasília:** {agora.strftime('%H:%M:%S')}")
 
-# 1. MONITOR DE ABERTURAS (Horários de Verão Atuais - Junho de 2026)
+# 1. MONITOR DE ABERTURAS
 st.subheader("🏦 Status de Abertura")
 
 status_euro = "🟢 ABERTO (Foco: EUR/USD)" if 4 <= agora.hour < 13 else "🔴 FECHADO"
